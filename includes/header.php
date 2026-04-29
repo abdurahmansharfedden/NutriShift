@@ -34,12 +34,13 @@ $page_title = $page_title ?? 'NutriShift';
         </a>
 
         <ul class="nav-links" role="list">
-            <?php if ($_SESSION['role'] === 'admin'): ?>
-                <li><a href="admin_dashboard.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'admin_dashboard.php' ? 'active' : '' ?>">Admin Panel</a></li>
-            <?php else: ?>
-                <li><a href="user_dashboard.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'user_dashboard.php' ? 'active' : '' ?>">My Dashboard</a></li>
-            <?php endif; ?>
-        </ul>
+    <?php if ($_SESSION['role'] === 'admin'): ?>
+        <li><a href="admin_dashboard.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'admin_dashboard.php' ? 'active' : '' ?>">Admin Panel</a></li>
+    <?php else: ?>
+        <li><a href="user_dashboard.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'user_dashboard.php' ? 'active' : '' ?>">My Dashboard</a></li>
+        <li><a href="profile.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'profile.php' ? 'active' : '' ?>">Profile</a></li>
+    <?php endif; ?>
+</ul>
 
         <div class="nav-actions">
             <span class="nav-user-badge">

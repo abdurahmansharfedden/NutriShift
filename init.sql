@@ -75,3 +75,16 @@ INSERT IGNORE INTO users (username, email, password_hash, role) VALUES (
     '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',  -- Admin@1234
     'admin'
 );
+
+-- =============================================================================
+-- TABLE: weight_logs
+-- Tracks historical weight changes.
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS weight_logs (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id INT UNSIGNED NOT NULL,
+    weight DECIMAL(5,2) NOT NULL,
+    logged_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_weight_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

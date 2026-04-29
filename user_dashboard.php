@@ -103,6 +103,28 @@ $cal_remain  = max(0, $target_cal - $totals['calories']);
 $success_msg = get_flash('success');
 $error_msg   = get_flash('error');
 
+// ─────────────────────────────────────────────────────────────────────────────
+// FETCH: Most Recent AI Weekly Program
+// ─────────────────────────────────────────────────────────────────────────────
+$program_stmt = $pdo->prepare('SELECT id, program_data FROM user_programs WHERE user_id = :uid ORDER BY created_at DESC LIMIT 1');
+$program_stmt->execute([':uid' => $uid]);
+$latest_program = $program_stmt->fetch();
+$current_workout_plan = $latest_program ? json_decode($latest_program['program_data'], true) : null;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FETCH: Weight Progress for Chart
+// ─────────────────────────────────────────────────────────────────────────────
+$weight_stmt = $pdo->prepare('SELECT weight, logged_at FROM weight_logs WHERE user_id = :uid ORDER BY logged_at ASC');
+$weight_stmt->execute([':uid' => $uid]);
+$weight_logs = $weight_stmt->fetchAll();
+
+$chart_labels = [];
+$chart_data = [];
+foreach ($weight_logs as $log) {
+    $chart_labels[] = date('d M', strtotime($log['logged_at']));
+    $chart_data[] = (float)$log['weight'];
+}
+
 $page_title = 'My Dashboard';
 require_once 'includes/header.php';
 ?>
@@ -122,6 +144,8 @@ require_once 'includes/header.php';
     <?php if ($error_msg): ?>
         <div class="alert alert-error">⚠️ <?= sanitize($error_msg) ?></div>
     <?php endif; ?>
+
+
 
     <!-- ─── STATS STRIP ─── -->
     <div class="stats-grid">
@@ -147,12 +171,29 @@ require_once 'includes/header.php';
         <?php endif; ?>
     </div>
 
+    <!-- ─── WEIGHT TREND CHART ─── -->
+    <div class="card mb-2" style="margin-top: 20px;">
+        <div class="card-header">
+            <h2 class="card-title">📈 Weight Trend</h2>
+        </div>
+        <?php if (empty($chart_data)): ?>
+            <div class="empty-state">
+                <div class="empty-icon">⚖️</div>
+                <p>Update your profile to see your progress chart!</p>
+            </div>
+        <?php else: ?>
+            <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="weightChart"></canvas>
+            </div>
+        <?php endif; ?>
+    </div>
+
     <!-- ─── TWO-COLUMN LAYOUT ─── -->
     <div class="two-col">
 
         <!-- LEFT: Cycle List + Add Cycle -->
         <div>
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-header">
                     <h2 class="card-title">🔄 My Cycles</h2>
                     <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-cycle')" id="btn-open-add-cycle">+ New Cycle</button>
@@ -215,6 +256,53 @@ require_once 'includes/header.php';
                         </tbody>
                     </table>
                 </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- Today's Training Widget -->
+            <div class="card mb-4">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 class="card-title" style="margin: 0;">🏋️ Today's Training</h3>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <?php if ($latest_program): ?>
+                            <a href="delete_workout.php?id=<?= $latest_program['id'] ?>" class="btn btn-sm btn-outline-danger" style="padding: 4px 10px; font-size: 0.8rem;" onclick="return confirm('Delete today\'s workout plan?')">🗑️</a>
+                        <?php endif; ?>
+                        <form action="generate_workout.php" method="POST" style="display: flex; align-items: center; margin: 0;">
+                            <select name="target_split" class="form-control form-control-sm" style="width: auto; display: inline-block; margin-right: 10px;">
+                                <option value="Push">Push</option>
+                                <option value="Pull">Pull</option>
+                                <option value="Legs">Legs</option>
+                                <option value="Upper Body">Upper Body</option>
+                                <option value="Lower Body">Lower Body</option>
+                                <option value="Full Body" selected>Full Body</option>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">⚡ Generate</button>
+                        </form>
+                    </div>
+                </div>
+                <?php if (empty($current_workout_plan)): ?>
+                    <div class="empty-state" style="padding: 20px;">
+                        <p style="color: #94a3b8;">No active plan found. Ask the AI Coach to generate one for you!</p>
+                    </div>
+                <?php else: ?>
+                    <div style="padding-top: 10px;">
+                        <h4 style="color: #00d26a; margin-bottom: 15px; font-size: 1.1rem;"><?= sanitize($current_workout_plan['workout_name'] ?? 'Your Workout') ?></h4>
+                        <?php if (!empty($current_workout_plan['exercises']) && is_array($current_workout_plan['exercises'])): ?>
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                            <?php foreach ($current_workout_plan['exercises'] as $ex): ?>
+                                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 0;">
+                                    <div>
+                                        <strong style="color: #e2e8f0; font-weight: 500;"><?= sanitize($ex['name'] ?? 'Exercise') ?></strong>
+                                        <a href="swap_exercise.php?id=<?= $latest_program['id'] ?>&old_ex=<?= urlencode($ex['name'] ?? '') ?>" title="Swap Exercise" style="text-decoration:none; margin-left:8px; font-size:0.8rem;">🔄</a>
+                                    </div>
+                                    <span style="color: #94a3b8; font-size: 0.9rem;"><?= sanitize($ex['sets'] ?? '-') ?> sets &times; <?= sanitize($ex['reps'] ?? '-') ?> reps</span>
+                                </li>
+                            <?php endforeach; ?>
+                            </ul>
+                        <?php else: ?>
+                            <p style="color: #94a3b8; font-size: 0.9rem;">No specific exercises listed.</p>
+                        <?php endif; ?>
+                    </div>
                 <?php endif; ?>
             </div>
         </div>
@@ -525,5 +613,51 @@ require_once 'includes/header.php';
         </form>
     </div>
 </div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const canvas = document.getElementById('weightChart');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        const chartLabels = <?= json_encode($chart_labels) ?>;
+        const chartData = <?= json_encode($chart_data) ?>;
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Weight (kg)',
+                    data: chartData,
+                    borderColor: '#00d26a',
+                    backgroundColor: 'rgba(0, 210, 106, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8' }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
 
 <?php require_once 'includes/footer.php'; ?>
