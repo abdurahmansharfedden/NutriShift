@@ -485,3 +485,146 @@ tbody td { padding: .8rem 1rem; color: var(--text); vertical-align: middle; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ─────────────────────────────────────────────
+   17. SMART LOG — AI Macro Estimator
+───────────────────────────────────────────────*/
+
+/* AI button — distinct from regular primary button */
+.btn-ai {
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  color: #fff;
+  border: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding: .65rem 1.1rem;
+}
+.btn-ai:hover   { opacity: .88; text-decoration: none; }
+.btn-ai:disabled{ opacity: .5; cursor: not-allowed; }
+
+/* Outer wrapper shown above the manual form divider */
+.smart-log-section {
+  background: linear-gradient(135deg, rgba(124,58,237,.08), rgba(79,70,229,.06));
+  border: 1px solid rgba(124,58,237,.22);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.1rem .8rem;
+  margin-bottom: .25rem;
+}
+
+/* Label row with gradient badge */
+.smart-log-label {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  font-size: .82rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: .6rem;
+}
+.smart-log-badge {
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  color: #fff;
+  font-size: .68rem;
+  font-weight: 700;
+  padding: .18rem .55rem;
+  border-radius: 999px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* Textarea + button side-by-side */
+.smart-log-row {
+  display: flex;
+  gap: .65rem;
+  align-items: flex-start;
+}
+.smart-log-textarea {
+  flex: 1;
+  min-height: 72px;
+  resize: vertical;
+  font-size: .875rem;
+  background: var(--bg-input);
+  border: 1px solid rgba(124,58,237,.25);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: .65rem .9rem;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.smart-log-textarea:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124,58,237,.18);
+}
+
+/* Hint text below the textarea */
+.smart-log-hint {
+  font-size: .75rem;
+  color: var(--text-muted);
+  margin-top: .45rem;
+  line-height: 1.4;
+}
+
+/* Status / feedback message */
+.smart-log-status {
+  margin-top: .6rem;
+  padding: .55rem .85rem;
+  border-radius: var(--radius-sm);
+  font-size: .8rem;
+  font-weight: 500;
+  animation: slideDown .25s ease;
+}
+.smart-log-status.status-loading {
+  background: rgba(124,58,237,.1);
+  border: 1px solid rgba(124,58,237,.25);
+  color: #a78bfa;
+}
+.smart-log-status.status-ok {
+  background: rgba(52,211,153,.1);
+  border: 1px solid rgba(52,211,153,.25);
+  color: var(--success);
+}
+.smart-log-status.status-error {
+  background: rgba(248,113,113,.1);
+  border: 1px solid rgba(248,113,113,.25);
+  color: var(--danger);
+}
+
+/* Filled fields get a brief highlight after AI auto-fill */
+@keyframes fieldHighlight {
+  0%   { box-shadow: 0 0 0 3px rgba(124,58,237,.45); }
+  100% { box-shadow: 0 0 0 0   rgba(124,58,237,0); }
+}
+.ai-filled { animation: fieldHighlight .8s ease forwards; }
+
+/* Divider between AI block and manual form */
+.smart-log-divider {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-block: .9rem;
+  color: var(--text-muted);
+  font-size: .75rem;
+  letter-spacing: .04em;
+}
+.smart-log-divider::before,
+.smart-log-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Spinning loader inside the AI button */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  vertical-align: middle;
+}

@@ -411,13 +411,50 @@ require_once 'includes/header.php';
     </div>
 </div>
 
-<!-- Modal: Add Meal -->
+<!-- Modal: Add Meal (with Smart Log AI section) -->
 <div class="modal-overlay" id="modal-add-meal" role="dialog" aria-modal="true" aria-labelledby="modal-add-meal-title">
     <div class="modal">
         <div class="modal-header">
             <h3 class="modal-title" id="modal-add-meal-title">🍽 Log Food Item</h3>
             <button class="modal-close" onclick="closeModal('modal-add-meal')" aria-label="Close">×</button>
         </div>
+
+        <!-- ── SMART LOG SECTION ─────────────────────────────────────── -->
+        <!-- This block is purely JS-driven; it is NOT part of the form  -->
+        <div class="smart-log-section">
+            <label for="smart_log_input" class="smart-log-label">
+                <span class="smart-log-badge">✨ AI Smart Log</span>
+                Describe your meal in plain language
+            </label>
+            <div class="smart-log-row">
+                <textarea
+                    id="smart_log_input"
+                    class="smart-log-textarea"
+                    placeholder="e.g. a bowl of white rice, two boiled eggs, and a tablespoon of olive oil"
+                    rows="3"
+                    maxlength="500"
+                    aria-describedby="smart-log-hint"></textarea>
+                <button
+                    type="button"
+                    id="smart-log-btn"
+                    class="btn btn-ai"
+                    onclick="runSmartLog()"
+                    aria-label="Estimate macros with AI">
+                    <span id="smart-log-btn-text">⚡ Estimate</span>
+                </button>
+            </div>
+            <p id="smart-log-hint" class="smart-log-hint">AI will estimate macros and auto-fill the fields below. You can edit before saving.</p>
+            <!-- Status message area -->
+            <div id="smart-log-status" class="smart-log-status" aria-live="polite" hidden></div>
+        </div>
+
+        <div class="smart-log-divider">
+            <span>or fill in manually</span>
+        </div>
+
+        
+        <!-- ── END SMART LOG SECTION ─────────────────────────────────── -->
+
         <form method="POST" action="process_meal.php">
             <input type="hidden" name="action"   value="add_meal">
             <input type="hidden" name="cycle_id" value="<?= $selected_cycle_id ?>">
